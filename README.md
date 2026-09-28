@@ -49,7 +49,7 @@ meteologica_prueba/
 
 ```bash
 git clone https://github.com/vgarciacrespo/meteologica-prueba-tecnica
-cd meteologica_prueba
+cd meteologica-prueba-tecnica
 ```
 
 **2. Crear y activar el entorno virtual de Python:**
