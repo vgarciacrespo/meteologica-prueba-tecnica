@@ -1,0 +1,19 @@
+# Entorno virtual
+.venv/
+env/
+venv/
+
+# Python cache y compilados
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Datos intermedios de salida y cache local
+output/
+data/eolica_551.json
+
+# Sistema y editores
+.DS_Store
+.vscode/
+.idea/
