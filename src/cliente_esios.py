@@ -49,16 +49,22 @@ def descargar_generacion_eolica(
 
     registros = []
     for item in valores:
-        registros.append(
-            {
-                "timestamp_utc": item.get("datetime_utc"),
-                "potencia_mw": float(item.get("value")),
-            }
-        )
+        val = item.get("value")
+        if val is not None:
+            registros.append(
+                {
+                    "timestamp_utc": item.get("datetime_utc"),
+                    "potencia_mw": float(val),
+                }
+            )
 
     df = pd.DataFrame(registros)
     df["timestamp_utc"] = pd.to_datetime(df["timestamp_utc"], utc=True)
-    df = df.sort_values("timestamp_utc").drop_duplicates(subset=["timestamp_utc"]).reset_index(drop=True)
+    df = (
+        df.sort_values("timestamp_utc")
+        .drop_duplicates(subset=["timestamp_utc"])
+        .reset_index(drop=True)
+    )
 
     df["eolica_mwh"] = df["potencia_mw"] * (5.0 / 60.0)
 
@@ -71,5 +77,5 @@ def descargar_generacion_eolica(
 
 if __name__ == "__main__":
     df_eolica = descargar_generacion_eolica()
-    print(f"Registros eolicos descargados: {len(df_eolica)}")
+    print(f"Registros eolicos descargados/cargados: {len(df_eolica)}")
     print(df_eolica.head())

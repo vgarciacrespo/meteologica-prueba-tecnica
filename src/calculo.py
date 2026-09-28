@@ -17,11 +17,8 @@ def cruzar_y_calcular_balance(
 def generar_granularidades(df_5min: pd.DataFrame) -> dict[str, pd.DataFrame]:
     df_base = df_5min.copy().set_index("timestamp_utc")
 
-    # 1. Granularidad Cincominutal (5 min)
     df_cincominutal = df_base[["energia_adicional_mwh"]].reset_index()
 
-    # 2. Granularidad Minutal (1 min)
-    # Cada intervalo de 5 min se reparte de forma equitativa entre sus 5 minutos
     minutos_range = pd.date_range(
         start=df_base.index.min(),
         end=df_base.index.max() + pd.Timedelta(minutes=4),
@@ -36,7 +33,6 @@ def generar_granularidades(df_5min: pd.DataFrame) -> dict[str, pd.DataFrame]:
     df_minutal["energia_adicional_mwh"] = df_minutal["energia_adicional_mwh"] / 5.0
     df_minutal = df_minutal.reset_index()
 
-    # 3. Granularidad Horaria (1 hora UTC)
     df_horaria = (
         df_base["energia_adicional_mwh"]
         .resample("1h")
@@ -44,7 +40,6 @@ def generar_granularidades(df_5min: pd.DataFrame) -> dict[str, pd.DataFrame]:
         .reset_index()
     )
 
-    # 4. Granularidad Diaria (1 dia UTC)
     df_diaria = (
         df_base["energia_adicional_mwh"]
         .resample("1D")
@@ -71,4 +66,6 @@ if __name__ == "__main__":
 
     print("--- Resumen de granularidades generadas ---")
     for nombre, df in granularidades.items():
-        print(f"{nombre.capitalize()}: {len(df)} registros | Total energia adicional: {df['energia_adicional_mwh'].sum():.2f} MWh")
+        print(
+            f"{nombre.capitalize()}: {len(df)} registros | Total energia adicional: {df['energia_adicional_mwh'].sum():.2f} MWh"
+        )

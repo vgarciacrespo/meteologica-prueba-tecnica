@@ -7,47 +7,50 @@ def parsear_demanda(filepath: str | Path) -> pd.DataFrame:
     if not path.is_file():
         raise FileNotFoundError(f"No se encontro el archivo: {filepath}")
 
-    registros = []
-    with open(path, "r", encoding="utf-8") as f:
-        _ = f.readline()
-        for linea in f:
-            limpia = linea.strip().rstrip(";")
-            if not limpia:
-                continue
-            partes = limpia.split(";")
-            if len(partes) >= 2:
-                registros.append((partes[0], partes[1]))
-
-    df = pd.DataFrame(registros, columns=["local_datetime", "demanda_kwh"])
-    df["demanda_kwh"] = (
-        df["demanda_kwh"]
-        .str.replace(".", "", regex=False)
-        .str.replace(",", ".", regex=False)
-        .astype(float)
+    # 1. Parseo con manejo de decimales espanoles y lineas con separadores residuales
+    df = pd.read_csv(
+        path,
+        sep=";",
+        decimal=",",
+        thousands=".",
+        usecols=[0, 1],
+        names=["local_datetime", "demanda_kwh"],
+        header=0,
+        engine="python",
     )
+
+    # 2. Conversion a float y transformacion a MWh
+    df["demanda_kwh"] = pd.to_numeric(df["demanda_kwh"], errors="coerce")
     df["demanda_mwh"] = df["demanda_kwh"] / 1000.0
 
+    # 3. Normalizacion de zona horaria local peninsular a UTC
     df["timestamp_utc"] = (
         pd.to_datetime(df["local_datetime"])
         .dt.tz_localize("Europe/Madrid", nonexistent="shift_forward", ambiguous="infer")
         .dt.tz_convert("UTC")
     )
 
-    df = df[["timestamp_utc", "demanda_mwh"]].sort_values("timestamp_utc").drop_duplicates(subset=["timestamp_utc"])
+    # 4. Limpieza de duplicados y ordenacion
+    df = (
+        df[["timestamp_utc", "demanda_mwh"]]
+        .dropna(subset=["timestamp_utc"])
+        .sort_values("timestamp_utc")
+        .drop_duplicates(subset=["timestamp_utc"])
+    )
 
-    # Rejilla temporal completa de 5 minutos en UTC
+    # 5. Rejilla temporal completa de 5 minutos en UTC
     rejilla_completa = pd.date_range(
         start=df["timestamp_utc"].min(),
         end=df["timestamp_utc"].max(),
         freq="5min",
-        name="timestamp_utc"
+        name="timestamp_utc",
     )
 
     df = df.set_index("timestamp_utc").reindex(rejilla_completa)
-    
-    # Tratamiento de la laguna: interpolacion lineal para los intervalos faltantes
+
+    # 6. Interpolacion temporal para cubrir los intervalos faltantes
     df["demanda_mwh"] = df["demanda_mwh"].interpolate(method="time")
-    
+
     return df.reset_index()
 
 
