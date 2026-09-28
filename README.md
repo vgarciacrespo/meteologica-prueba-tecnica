@@ -48,7 +48,7 @@ meteologica_prueba/
 **1. Clonar el repositorio y acceder al directorio:**
 
 ```bash
-git clone <URL_DEL_REPOSITORIO>
+git clone https://github.com/vgarciacrespo/meteologica-prueba-tecnica
 cd meteologica_prueba
 ```
 
