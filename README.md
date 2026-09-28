@@ -30,8 +30,8 @@ meteologica_prueba/
 │   └── test_calculo.py                         # Pruebas unitarias de consistencia y balance
 ├── requirements.txt                            # Dependencias fijadas del proyecto
 ├── .gitignore
-├── MEMORIA.md                                  # Memoria técnica justificativa
-└── README.md
+├── memoria.md                                  # Memoria técnica justificativa
+└── README.md                                  
 ```
 
 ---
